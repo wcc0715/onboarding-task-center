@@ -41,7 +41,7 @@
 
 工作流程只發布三個網頁資源與 `.nojekyll`，README 與檢查報告保留於 repo。Repository：https://github.com/wcc0715/onboarding-task-center
 
-展示網址（須待部署成功）：https://wcc0715.github.io/onboarding-task-center/
+展示網址（已部署並驗證 HR 登入）：https://wcc0715.github.io/onboarding-task-center/
 
 官方說明：https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
 
