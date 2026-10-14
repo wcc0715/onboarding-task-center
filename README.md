@@ -11,11 +11,11 @@
 - 依內建 2026 年日期表計算任務期限。
 - 通知紀錄、通知中心及郵件草稿模擬。
 - 佐證檔案選擇、瀏覽器儲存及審核。
-- 取消入職、30 日可復原區及角色管理展示。
+- 取消入職、最近刪除（移入後 30 日內可復原）及角色管理展示。
 
 ## 技術架構
 
-瀏覽器 → index.html（介面及基礎邏輯）→ stage2.js（流程規則）＋ theme.css（樣式）。
+瀏覽器 → index.html（介面及基礎邏輯）→ stage2.js（流程規則）＋ workflow-rules.js／workflow-fixes.js（驗證與流程防呆）＋ theme.css（樣式）。
 
 使用 HTML、CSS、原生 JavaScript，無第三方前端套件、後端、套件安裝或建置步驟。靜態資源採相對路徑，可部署於 GitHub Pages 專案子路徑。
 
@@ -39,7 +39,7 @@
 4. 在 Actions 執行 Deploy GitHub Pages，或推送 main 觸發部署。
 5. 成功後由工作流程的 github-pages environment 開啟網址；一般格式為 `https://<帳號>.github.io/onboarding-task-center/`。
 
-工作流程只發布三個網頁資源與 `.nojekyll`，README 與檢查報告保留於 repo。Repository：https://github.com/wcc0715/onboarding-task-center
+工作流程只發布五個網頁資源與 `.nojekyll`，README 與檢查報告保留於 repo。Repository：https://github.com/wcc0715/onboarding-task-center
 
 展示網址（已部署並驗證 HR 登入）：https://wcc0715.github.io/onboarding-task-center/
 
@@ -56,3 +56,16 @@
 清除展示資料：在瀏覽器網站資料設定中清除此網站的儲存資料，包含 sessionStorage 與 IndexedDB。關閉頁籤不保證立即移除 IndexedDB 佐證檔案。
 
 本專案未附開源授權；公開展示不代表授予他人重用授權。
+
+## 2026-10-14 負向 UAT 修正
+
+- 核准前必須已送審、完成待辦、提供佐證檔案與非空白備註；HR 自身任務須由 HR 主管審核。
+- 待審與已完成任務鎖定，避免再次提交；退回及主管重新開啟要求原因與重新補件。
+- 新增／編輯姓名不能只有空白，公司信箱需符合基本格式。
+- 重新指派同步任務與角色目錄；通知保存失敗與重送事件，逾期提醒不重複累加。
+- 「30 日可復原區」統一改名為「最近刪除」，維持 30 日復原期限。
+- 附件檢查數量、大小、副檔名、基本標頭與 PNG 可解碼性；尚非完整文件解析或惡意內容掃描。
+
+本機修正版已實際執行 31 項針對性操作重測，包含 IT／行政／HR／主管完整送審核准、退回補件與重新開啟；五組規則單元測試通過。此結果不等於企業正式驗收、多頁籤競態或完整資安稽核，未執行項目不列為通過。
+
+規則測試：`node --test tests/workflow-rules.test.js`。

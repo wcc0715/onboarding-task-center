@@ -275,18 +275,18 @@ openTask = async function (task) {
   }
 };
 
-/* HR 專用的取消入職紀錄與 30 日可復原區。 */
+/* HR 專用的取消入職紀錄與最近刪除。 */
 let cancelledPeople = JSON.parse(sessionStorage.getItem('onboardingCancelledPeople') || '[]');
 let recyclePeople = JSON.parse(sessionStorage.getItem('onboardingRecyclePeople') || '[]');
 
 const sidebar = document.querySelector('.sidebar');
-sidebar.insertAdjacentHTML('beforeend', '<button class="nav-btn" id="navCompleted">已完成流程</button><button class="nav-btn" id="navAccounts">帳號與角色</button><button class="nav-btn" id="navCancelled">取消入職紀錄</button><button class="nav-btn" id="navRecycle">30 日可復原區</button>');
+sidebar.insertAdjacentHTML('beforeend', '<button class="nav-btn" id="navCompleted">已完成流程</button><button class="nav-btn" id="navAccounts">帳號與角色</button><button class="nav-btn" id="navCancelled">取消入職紀錄</button><button class="nav-btn" id="navRecycle">最近刪除</button>');
 sidebar.insertAdjacentHTML('beforeend', '<p class="help" style="padding:12px;line-height:1.6">期限配合政府公告之行事曆。</p>');
 document.querySelector('main').insertAdjacentHTML('beforeend', `
-  <section id="completedView" hidden><div class="eyebrow">HR 專用</div><div class="toolbar"><div><h1>已完成流程</h1><p>集中暫存 HR 已確認完成的新人流程；完成日起一個月後，系統將移入 30 日可復原區。</p></div></div><div class="panel table-wrap"><table class="people"><thead><tr><th>新人</th><th>部門</th><th>到職日</th><th>完成時間</th><th>處理</th></tr></thead><tbody id="completedRows"></tbody></table></div></section>
+  <section id="completedView" hidden><div class="eyebrow">HR 專用</div><div class="toolbar"><div><h1>已完成流程</h1><p>集中暫存 HR 已確認完成的新人流程；完成日起一個月後，系統將移入「最近刪除」。</p></div></div><div class="panel table-wrap"><table class="people"><thead><tr><th>新人</th><th>部門</th><th>到職日</th><th>完成時間</th><th>處理</th></tr></thead><tbody id="completedRows"></tbody></table></div></section>
   <section id="accountsView" hidden><div class="eyebrow">HR 專用</div><div class="toolbar"><div><h1>帳號與角色</h1><p>IT 建立或停用公司帳號；HR 主管可管理全部負責人，HR 僅可修改 IT 與行政負責人。儲存後同步套用至任務清單與通知對象。</p></div></div><div class="panel table-wrap"><table class="people"><thead><tr><th>系統角色</th><th>使用者姓名</th><th>公司信箱</th><th>帳號管理責任</th><th>操作</th></tr></thead><tbody id="accountRows"></tbody></table></div></section>
   <section id="cancelledView" hidden><div class="eyebrow">HR 專用</div><div class="toolbar"><div><h1>取消入職紀錄</h1><p>保留完整流程內容，等待 HR 人工確認。已刪除之資料，可至復原區查看。</p></div></div><div class="panel table-wrap"><table class="people"><thead><tr><th>新人</th><th>部門</th><th>到職日</th><th>處理</th></tr></thead><tbody id="cancelledRows"></tbody></table></div></section>
-  <section id="recycleView" hidden><div class="eyebrow">HR 專用</div><div class="toolbar"><div><h1>30 日可復原區</h1><p>包含 HR 確認刪除的紀錄，以及完成後一個月自動移入的流程資料。</p></div></div><div class="panel table-wrap"><table class="people"><thead><tr><th>新人</th><th>來源</th><th>移入時間</th><th>可復原期限</th><th>處理</th></tr></thead><tbody id="recycleRows"></tbody></table></div></section>
+  <section id="recycleView" hidden><div class="eyebrow">HR 專用</div><div class="toolbar"><div><h1>最近刪除</h1><p>包含 HR 確認刪除的紀錄，以及完成後一個月自動移入的流程資料；移入後 30 日內可復原。</p></div></div><div class="panel table-wrap"><table class="people"><thead><tr><th>新人</th><th>來源</th><th>移入時間</th><th>可復原期限</th><th>處理</th></tr></thead><tbody id="recycleRows"></tbody></table></div></section>
 `);
 
 function saveArchiveData() {
@@ -557,20 +557,20 @@ $('#editForm').onsubmit = event => {
   showSystemToast('已模擬發送停止任務通知，並移入取消入職紀錄。');
 };
 
-/* 僅 HR 可刪除，採兩次確認，刪除後進入 30 日可復原區。 */
+/* 僅 HR 可刪除，採兩次確認，刪除後進入「最近刪除」。 */
 $('#editBtn').insertAdjacentHTML('afterend', ' <button class="btn secondary" id="deletePersonBtn">刪除流程</button>');
 $('#deletePersonBtn').onclick = () => {
   if (!['hr', 'hrSupervisor'].includes($('#role').value) || !current) return;
   if (!confirm(`第一次確認：確定要刪除「${current.name}」的流程嗎？`)) return;
-  if (!confirm('第二次確認：刪除後將移入 30 日可復原區，是否繼續？')) return;
+  if (!confirm('第二次確認：刪除後將移入「最近刪除」，是否繼續？')) return;
   recyclePeople.unshift({ person: { ...current }, source: 'HR 手動刪除', archivedAt: new Date().toISOString() });
   people = people.filter(person => person.id !== current.id);
   saveArchiveData();
   showPeople();
-  showSystemToast('流程已移入 30 日可復原區。');
+  showSystemToast('流程已移入「最近刪除」。');
 };
 
-/* 整體完成日起一個月後移入 30 日可復原區。 */
+/* 整體完成日起一個月後移入「最近刪除」。 */
 const originalSyncOverall = syncOverall;
 function hasRecordedTaskActivity(person) {
   const tasks = ['hr', 'it', 'admin'];
@@ -702,7 +702,7 @@ renderNotifications = function () {
 /* 系統異常的判定先以可驗證事件呈現，不將人工刪除直接視為異常。 */
 const anomalyInfo = document.createElement('div');
 anomalyInfo.className = 'preview';
-anomalyInfo.innerHTML = '<h3>刪除異常監控（展示規則）</h3><ul><li>未經 HR 二次確認即出現刪除紀錄。</li><li>非 HR 身分觸發刪除。</li><li>30 日屆滿前資料被永久清除。</li><li>復原後出現資料缺漏或任務對應錯誤。</li><li>同一筆資料短時間重複刪除或復原。</li></ul><p class="help">一般人工誤刪仍視為刪除行為，可由 30 日可復原區處理；偵測到上述情況時才標示「系統異常」並通知 IT 人工處理。</p>';
+anomalyInfo.innerHTML = '<h3>刪除異常監控（展示規則）</h3><ul><li>未經 HR 二次確認即出現刪除紀錄。</li><li>非 HR 身分觸發刪除。</li><li>30 日屆滿前資料被永久清除。</li><li>復原後出現資料缺漏或任務對應錯誤。</li><li>同一筆資料短時間重複刪除或復原。</li></ul><p class="help">一般人工誤刪仍視為刪除行為，可由「最近刪除」處理；偵測到上述情況時才標示「系統異常」並通知 IT 人工處理。</p>';
 $('#recycleView .toolbar').after(anomalyInfo);
 
 applyRoleView();
